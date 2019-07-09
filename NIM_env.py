@@ -1,6 +1,7 @@
 import random
 class NIM_env:
 
+    #Checking
     #CHECKED
     #later we can add cash and stuff
     def __init__(self):
