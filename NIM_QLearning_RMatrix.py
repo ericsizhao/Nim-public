@@ -4,15 +4,22 @@ import random
 import time
 from IPython.display import clear_output
 
+#That can be changed
+#Learning_rate, how much the Machine cares about new info
+#Discount_rate, how much the Machine cares about expected rewards
+#Exploration_rate, how much the Machine explores vs exploits
+#Number of intial stones
+#Rules of game
+#Training Opponent
+
 env = NIM_env()
+
 
 #modified these to len
 action_space_size = len(env.action_space)
 state_space_size= len(env.state_space)
 
 q_table = np.zeros((state_space_size, action_space_size))
-print(q_table)
-print("--")
 
 
 num_episodes = 10000
@@ -25,6 +32,8 @@ exploration_rate = 1
 max_exploration_rate = 1
 min_exploration_rate = 0.01
 exploration_decay_rate = 0.001
+
+win_count = []
 
 rewards_all_episodes = []
 
@@ -61,26 +70,30 @@ for episode in range(num_episodes):
 
         if done == True:
             break
-
     #Exploration rate decay
     exploration_rate = min_exploration_rate +\
                            (max_exploration_rate - min_exploration_rate) * np.exp(-exploration_decay_rate * episode)
 
     rewards_all_episodes.append(rewards_current_episode)
 
+    #count the wins
+    if reward == 100:
+        win_count.append(1)
+    else:
+        win_count.append(0)
+
 
 #Calculate and print the average reward per thousand episodes
 print("done!")
+
+
 rewards_per_thousand_episodes = np.split(np.array(rewards_all_episodes), num_episodes/1000)
+win_per_thousand_episodes = np.split(np.array(win_count), num_episodes/1000)
 count = 1000
 print("************Average reward per thousand episodes *************\n")
-for r in rewards_per_thousand_episodes:
-    print(count, ": ", str(sum(r/1000)))
+for r in win_per_thousand_episodes:
+    print(count, ": ", str(sum(r)))
     count +=1000
-    
-#Print updated R-matrix
-print("\n\n*********R-matrix************")
-print(env.reward_matrix)
 
 #Print updated Q-table
 print("\n\n*********Q-table************")

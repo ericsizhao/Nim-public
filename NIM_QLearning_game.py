@@ -5,6 +5,8 @@ import time
 from IPython.display import clear_output
 
 env = NIM_env()
+print(env.reward_matrix)
+input()
 
 #modified these to len
 action_space_size = len(env.action_space)
