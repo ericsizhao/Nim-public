@@ -102,79 +102,81 @@ print(q_table)
 
 
 
-print("\n\n********************************")
-print(" Time to play the Machine!")
 
-#Get who plays first
-playFirstPhrase = "Enter (1) to play first, Enter (2) to play second:"
-playFirst = intInputProtection(playFirstPhrase,1)
-if playFirst == 1:
-    print("You are Player One!")
-    computerTurn = False
-    playFirst = True
-elif playFirst == 2:
-    print("You are Player Two!")
-    computerTurn = True
-    playFirst = False
-else:
-    print("Bad input! You just lost your right to choose!")
-    print("You will be Player Two!")
 
-#after the program is trained, we, as a human, want to play!
-state = env.reset()
-done = False
-
-if playFirst:
-    #check for a winner - trivial case
-    if not env.movePossible():
-        done = True
-        print("Machine Wins.. but honestly was that fun?")
-        
-    #asks for the number of stones you wish to remove
-    #input protection ensures a valid response
-    else:
-        illegalMove = True
-        removeStonesPhrase = "How many stones do you want to remove?: "
-
-        while(illegalMove):
-            removeStones = intInputProtection(removeStonesPhrase, min(env.action_space))
-            illegalMove = env.isIllegalMove(removeStones)
-            
-            if illegalMove:
-                print("Illegal move!")
-                
-        env.current_stones -= removeStones
-
-        5#check for another winner
-        if not env.movePossible():
-            done = True
-            env.render()
-            print("You Win! but honestly was that fun?")
-
-while(not done):
-    env.render()
-
-    #Computer has decided on an action to make
-    action_order = np.argmax(q_table[state,:])
-    action_remove = env.action_space[action_order]
-    print("Machine wants to remove", action_remove, "stone(s)")
-
-    new_state,reward, done, info = env.step(action_order, True)
-    
-   
-    #If you cannot make a move, end the game
-    if(reward == -1):
-        env.render()
-        print("Machine cannot make a move")
-        print("You win!")
-    elif (reward == 100):
-        print("You cannot make a move :(")
-        print("Machine wins!")
-    else:
-        print("You have removed" , info, "stone(s)")
-    
-        
-    state = new_state
+# print("\n\n********************************")
+# print(" Time to play the Machine!")
+#
+# #Get who plays first
+# playFirstPhrase = "Enter (1) to play first, Enter (2) to play second:"
+# playFirst = intInputProtection(playFirstPhrase,1)
+# if playFirst == 1:
+#     print("You are Player One!")
+#     computerTurn = False
+#     playFirst = True
+# elif playFirst == 2:
+#     print("You are Player Two!")
+#     computerTurn = True
+#     playFirst = False
+# else:
+#     print("Bad input! You just lost your right to choose!")
+#     print("You will be Player Two!")
+#
+# #after the program is trained, we, as a human, want to play!
+# state = env.reset()
+# done = False
+#
+# if playFirst:
+#     #check for a winner - trivial case
+#     if not env.movePossible():
+#         done = True
+#         print("Machine Wins.. but honestly was that fun?")
+#
+#     #asks for the number of stones you wish to remove
+#     #input protection ensures a valid response
+#     else:
+#         illegalMove = True
+#         removeStonesPhrase = "How many stones do you want to remove?: "
+#
+#         while(illegalMove):
+#             removeStones = intInputProtection(removeStonesPhrase, min(env.action_space))
+#             illegalMove = env.isIllegalMove(removeStones)
+#
+#             if illegalMove:
+#                 print("Illegal move!")
+#
+#         env.current_stones -= removeStones
+#
+#         5#check for another winner
+#         if not env.movePossible():
+#             done = True
+#             env.render()
+#             print("You Win! but honestly was that fun?")
+#
+# while(not done):
+#     env.render()
+#
+#     #Computer has decided on an action to make
+#     action_order = np.argmax(q_table[state,:])
+#     action_remove = env.action_space[action_order]
+#     print("Machine wants to remove", action_remove, "stone(s)")
+#
+#     new_state,reward, done, info = env.step(action_order, True)
+#
+#
+#     #If you cannot make a move, end the game
+#     if(reward == -1):
+#         env.render()
+#         print("Machine cannot make a move")
+#         print("You win!")
+#     elif (reward == 100):
+#         print("You cannot make a move :(")
+#         print("Machine wins!")
+#     else:
+#         print("You have removed" , info, "stone(s)")
+#
+#
+#     state = new_state
 
 
 
