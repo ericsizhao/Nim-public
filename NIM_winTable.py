@@ -28,36 +28,37 @@ def intInputProtection(phrase,lessThan):
 def gen_win_list(n,action_space):
 
     winMatrix = []
-    winMoveMatrix = []
     winActionOrder = []
 
     #for loop that will iterate through until the table is complete
     #each iteration will add one to the solution table
-    for currentStone in range(n+1):
+    for currentStone in range(n):
 
+        #intial state
         if currentStone == 0:
             winMatrix.append(2)
-            winMoveMatrix.append(-1)
-            winActionOrder.append(-1)
+            winActionOrder.append([-1])
 
         else:
             moveFound = False
             action_order = 0
+            action_order_matrix = []
+
+            #for each possible move in a given state
             for pMove in action_space:
                 #the move must be legal
                 if currentStone >= pMove and winMatrix[currentStone-pMove] == 2:
                     winMatrix.append(1)
-                    winMoveMatrix.append(pMove)
-                    winActionOrder.append(action_order)
+                    action_order_matrix.append(action_order)
                     moveFound = True
-                    break
+
                 action_order +=1
 
-            if(not moveFound):
-                winMatrix.append(2)
-                winMoveMatrix.append(-1)
-                winActionOrder.append(-1)
+            if(moveFound):
+                winActionOrder.append(action_order_matrix)
 
-    print(winMatrix)
-    print(winMoveMatrix)
-    print(winActionOrder)
+            else:
+                winMatrix.append(2)
+                winActionOrder.append([-1])
+
+    return winActionOrder

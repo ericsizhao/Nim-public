@@ -1,5 +1,6 @@
 import numpy as np
 from NIM_env_RMatrix import *
+from NIM_winTable import gen_win_list
 import random
 import time
 from IPython.display import clear_output
@@ -99,8 +100,30 @@ for r in win_per_thousand_episodes:
 print("\n\n*********Q-table************")
 print(q_table)
 
+#gen the Machine win action list
+machine_winActionMatrix = []
+for state in range(len(q_table)):
+    action_order = np.argmax(q_table[state,:])
+    machine_winActionMatrix.append(action_order)
+print(machine_winActionMatrix)
 
+#gen the real 100% action win list
+real_winActionMatrix = gen_win_list(len(env.state_space),env.action_space)
+print(real_winActionMatrix)
 
+#compare the two lists
+win_move_count = 0
+matrix_count = 0
+total_possible_move = 0
+
+for move in machine_winActionMatrix:
+    if move in real_winActionMatrix[matrix_count]:
+        win_move_count +=1
+    if real_winActionMatrix[matrix_count] != [-1]:
+        total_possible_move +=1
+    matrix_count +=1
+
+print("winning moves/possible winning moves = " , win_move_count , "/" , total_possible_move)
 
 
 
