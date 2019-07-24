@@ -34,98 +34,106 @@ max_exploration_rate = 1
 min_exploration_rate = 0.01
 exploration_decay_rate = 0.001
 
-win_count = []
+total_win_move_count = 0
+five_sum = 0
+ten_sum = 0
+for trial in range(20):
+    win_count = []
+    rewards_all_episodes = []
 
-rewards_all_episodes = []
+    #Q-learning algorithm
 
-#Q-learning algorithm
+    #everything that happens each episode
+    for episode in range(num_episodes):
+        #reset the env to inital state
+        state = env.reset()
 
-#everything that happens each episode
-for episode in range(num_episodes):
-    #reset the env to inital state
-    state = env.reset()
+        #keeps track of whether or not the episode is finished
+        done = False
 
-    #keeps track of whether or not the episode is finished
-    done = False
+        #keeps track of rewards in each episode
+        rewards_current_episode = 0
+        for step in range(max_steps_per_episode):
 
-    #keeps track of rewards in each episode
-    rewards_current_episode = 0
+            #exploration-exploitation trade-off
+            exploration_rate_threshold = random.uniform(0,1)
+            if exploration_rate_threshold > exploration_rate:
+                action_order = np.argmax(q_table[state,:])
+            else:
+                #pick a random action
+                action_order = rand_action(env.action_space)
 
-    for step in range(max_steps_per_episode):
+            new_state,reward, done, info = env.step(action_order)
 
-        #exploration-exploitation trade-off
-        exploration_rate_threshold = random.uniform(0,1)
-        if exploration_rate_threshold > exploration_rate:
-            action_order = np.argmax(q_table[state,:])
-        else:
-            #pick a random action
-            action_order = rand_action(env.action_space)
-            
-        new_state,reward, done, info = env.step(action_order)
+            #Update Q-table for Q(s,a)
+            q_table[state,action_order] = q_table[state,action_order] * (1 - learning_rate) + \
+                                          learning_rate * (reward + discount_rate * np.max(q_table[new_state,:]))
+            state = new_state
+            rewards_current_episode += reward
 
-        #Update Q-table for Q(s,a)
-        q_table[state,action_order] = q_table[state,action_order] * (1 - learning_rate) + \
-                                learning_rate * (reward + discount_rate * np.max(q_table[new_state,:]))
-        state = new_state
-        rewards_current_episode += reward
-
-        if done == True:
-            break
-    #Exploration rate decay
-    exploration_rate = min_exploration_rate +\
+            if done == True:
+                break
+        #Exploration rate decay
+        exploration_rate = min_exploration_rate + \
                            (max_exploration_rate - min_exploration_rate) * np.exp(-exploration_decay_rate * episode)
 
-    rewards_all_episodes.append(rewards_current_episode)
+        rewards_all_episodes.append(rewards_current_episode)
 
-    #count the wins
-    if reward == 100:
-        win_count.append(1)
-    else:
-        win_count.append(0)
+        #count the wins
+        if reward == 100:
+            win_count.append(1)
+        else:
+            win_count.append(0)
 
+    #Calculate and print the average reward per thousand episodes
 
-#Calculate and print the average reward per thousand episodes
-print("done!")
+    rewards_per_thousand_episodes = np.split(np.array(rewards_all_episodes), num_episodes/1000)
+    win_per_thousand_episodes = np.split(np.array(win_count), num_episodes/1000)
+    count = 1000
+    #print("************Average reward per thousand episodes *************\n")
+    for r in win_per_thousand_episodes:
+        if count == 5000:
+            print(count, ": ", str(sum(r)))
+            five_sum +=sum(r)
+        if count == 10000:
+            print(count,": ", str(sum(r)))
+            ten_sum += sum(r)
+        count +=1000
 
+    #Print updated Q-table
+    #print("\n\n*********Q-table************")
+    #print(q_table)
 
-rewards_per_thousand_episodes = np.split(np.array(rewards_all_episodes), num_episodes/1000)
-win_per_thousand_episodes = np.split(np.array(win_count), num_episodes/1000)
-count = 1000
-print("************Average reward per thousand episodes *************\n")
-for r in win_per_thousand_episodes:
-    print(count, ": ", str(sum(r)))
-    count +=1000
+    #gen the Machine win action list
+    machine_winActionMatrix = []
+    for state in range(len(q_table)):
+        action_order = np.argmax(q_table[state,:])
+        machine_winActionMatrix.append(action_order)
+    # print(machine_winActionMatrix)
 
-#Print updated Q-table
-print("\n\n*********Q-table************")
-print(q_table)
+    #gen the real 100% action win list
+    real_winActionMatrix = gen_win_list(len(env.state_space),env.action_space)
+    #print(real_winActionMatrix)
 
-#gen the Machine win action list
-machine_winActionMatrix = []
-for state in range(len(q_table)):
-    action_order = np.argmax(q_table[state,:])
-    machine_winActionMatrix.append(action_order)
-print(machine_winActionMatrix)
+    #compare the two lists
+    win_move_count = 0
+    matrix_count = 0
+    total_possible_move = 0
 
-#gen the real 100% action win list
-real_winActionMatrix = gen_win_list(len(env.state_space),env.action_space)
-print(real_winActionMatrix)
+    for move in machine_winActionMatrix:
+        if move in real_winActionMatrix[matrix_count]:
+            win_move_count +=1
+        if real_winActionMatrix[matrix_count] != [-1]:
+            total_possible_move +=1
+        matrix_count +=1
 
-#compare the two lists
-win_move_count = 0
-matrix_count = 0
-total_possible_move = 0
+    print("winning moves/possible winning moves = " , win_move_count , "/" , total_possible_move)
+    total_win_move_count += win_move_count
+    input()
 
-for move in machine_winActionMatrix:
-    if move in real_winActionMatrix[matrix_count]:
-        win_move_count +=1
-    if real_winActionMatrix[matrix_count] != [-1]:
-        total_possible_move +=1
-    matrix_count +=1
-
-print("winning moves/possible winning moves = " , win_move_count , "/" , total_possible_move)
-
-
+print("avg 5,000: " , five_sum/20)
+print("avg 10,000: " , ten_sum/20)
+print("avg move: " , total_win_move_count/20 , "/" , total_possible_move)
 
 # print("\n\n********************************")
 # print(" Time to play the Machine!")
